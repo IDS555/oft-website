@@ -1,0 +1,167 @@
+---
+import { langs, t } from '../../i18n';
+export function getStaticPaths() {
+  return langs.map((lang) => ({ params: { lang } }));
+}
+const { lang } = Astro.params;
+const d = t[lang as keyof typeof t];
+const app = 'https://openfarmtools.org/';
+const u = (p: string) => import.meta.env.BASE_URL.replace(/\/$/, '') + p;
+const b = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<!doctype html>
+<html lang={lang}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Open Farm Tools</title>
+  <link rel="icon" href={`${b}/logo.png`} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="splash" role="dialog" aria-label="Welcome">
+    <img src={u('/logo.png')} width="170" height="170" alt="Open Farm Tools" />
+    <p class="quote">“Healing Soul and Soil”</p>
+    <button id="enter" type="button" autofocus>{d.explore}</button>
+    <small>Powered by Nostr</small>
+  </div>
+  <nav>
+    <a class="brand" href={`${b}/${lang}/`}><img src={`${b}/logo.png`} width="40" height="40" alt="" />Open Farm Tools</a>
+    <a class="l" href="#products">{d.nav[0]}</a><a class="l" href="#how">{d.nav[1]}</a><a class="l" href="#pricing">{d.nav[2]}</a>
+    <div class="lang">{langs.map((l) => <a href={`${b}/${l}/`} aria-current={l === lang ? 'true' : undefined}>{l.toUpperCase()}</a>)}</div>
+  </nav>
+  <main>
+    <header class="hero">
+      <div>
+        <h1>{d.h1}</h1><p>{d.sub}</p>
+        <a class="btn solid" href="#products">{d.cta[0]}</a><a class="btn" href={app}>{d.cta[1]}</a>
+      </div>
+      <div class="stage" id="stage" data-t={JSON.stringify(d.map)}>
+        <canvas id="c" aria-label="Interactive pasture map"></canvas>
+        <div class="hint">{d.hint}</div>
+        <div class="hud"><span class="pill" id="info"></span><span class="pill" id="st" aria-live="polite"></span></div>
+      </div>
+    </header>
+    <section id="products"><h2>{d.pt}</h2>
+      <div class="grid">{d.p.map((x, i) => <article><small>0{i + 1}</small><h3>{x[0]}</h3><p>{x[1]}</p></article>)}</div>
+    </section>
+    <section id="how"><h2>{d.ht}</h2>
+      <div class="grid three">{d.s.map((x, i) => <article><small>{i + 1}</small><h3>{x[0]}</h3><p>{x[1]}</p></article>)}</div>
+    </section>
+    <section id="faq"><h2>{d.faq.t}</h2>
+      <div class="faq">{d.faq.q.map((x) => <details><summary>{x[0]}</summary><p>{x[1]}</p></details>)}<p class="more">{d.faq.more}</p></div>
+    </section>
+    <!-- TODO: add Seb's landing page text here once it is ready (about / vision section) -->
+    <section id="pricing" class="soon"><h2>{d.bt}</h2><p>{d.bd}</p><a class="btn solid" href={app}>{d.bc}</a></section>
+  </main>
+  <footer>{d.foot}</footer>
+</body>
+</html>
+
+<style is:global>
+  :root { --bg:#0f0d17; --card:#181526; --ink:#f3f0fa; --mute:#a59cc0; --vio:#9a5cff; --line:#2c2644; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 'DM Sans', system-ui, sans-serif; }
+  h1, h2, h3 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; margin: 0; line-height: 1.08; }
+  a:focus-visible { outline: 3px solid var(--vio); outline-offset: 3px; }
+  nav { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 22px; padding: 10px 5vw; background: rgba(15,13,23,.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; font: 800 19px 'Bricolage Grotesque', sans-serif; color: var(--ink); text-decoration: none; }
+  .l { color: var(--mute); text-decoration: none; font-size: 15px; }
+  .l:hover { color: var(--ink); }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+  .lang a { padding: 5px 11px; font-size: 13px; color: var(--mute); text-decoration: none; }
+  .lang a[aria-current] { background: var(--vio); color: #fff; }
+  .hero { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 4vw; align-items: center; padding: 7vh 5vw 9vh; min-height: 86vh; }
+  .hero h1 { font-size: clamp(40px, 6vw, 84px); font-weight: 800; letter-spacing: -.03em; }
+  .hero p { color: var(--mute); max-width: 44ch; margin: 22px 0 30px; }
+  .btn { display: inline-block; padding: 13px 24px; margin: 0 10px 10px 0; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 500; }
+  .btn.solid { background: var(--vio); border-color: var(--vio); color: #fff; }
+  .btn:hover { filter: brightness(1.15); }
+  .stage { position: relative; aspect-ratio: 1; max-height: 72vh; width: 100%; border: 1px solid var(--line); border-radius: 20px; background: radial-gradient(circle at 50% 50%, #221a3d, #120f1e 75%); overflow: hidden; }
+  canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  .hint { position: absolute; top: 14px; left: 16px; font-size: 13px; color: var(--mute); }
+  .hud { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+  .pill { background: rgba(15,13,23,.92); border: 1px solid var(--line); border-radius: 10px; padding: 6px 11px; }
+  section { padding: 10vh 5vw; }
+  h2 { font-size: clamp(30px, 4vw, 52px); font-weight: 800; letter-spacing: -.02em; max-width: 20ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 16px; margin-top: 36px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  article small { color: var(--vio); font-weight: 500; }
+  article h3 { font-size: 22px; margin: 10px 0 8px; }
+  article p { margin: 0; color: var(--mute); font-size: 15px; }
+  #splash { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: var(--bg); transition: opacity .5s; }
+  #splash.gone { opacity: 0; pointer-events: none; }
+  #splash .quote { font: 600 clamp(22px, 4vw, 34px) 'Bricolage Grotesque', sans-serif; margin: 0; text-align: center; padding: 0 5vw; }
+  #splash button { padding: 13px 34px; border-radius: 10px; border: 1px solid var(--vio); background: var(--vio); color: #fff; font: 500 17px 'DM Sans', sans-serif; cursor: pointer; }
+  #splash small { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); color: var(--mute); letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }
+  .faq { margin-top: 30px; max-width: 70ch; }
+  details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  summary { cursor: pointer; font-weight: 500; }
+  details p, .more { color: var(--mute); margin: 10px 0 0; }
+  .soon p { color: var(--mute); max-width: 52ch; margin: 18px 0 26px; }
+  footer { padding: 40px 5vw; color: var(--mute); font-size: 14px; border-top: 1px solid var(--line); }
+  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; min-height: 0; } .l { display: none; } }
+</style>
+
+<script>
+  const cv = document.getElementById('c') as HTMLCanvasElement;
+  const x = cv.getContext('2d')!;
+  const T = JSON.parse((document.getElementById('stage') as HTMLElement).dataset.t!);
+  const info = document.getElementById('info')!, st = document.getElementById('st')!;
+  const still = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let W = 0, H = 0, R = 0, sel: any = null, drag: any = null, tick = 0;
+  const G = [1, 2, 3, 4, 5].map((i) => ({ n: 'goat-00' + i, x: .5 + Math.cos(i * 1.25) * .12, y: .5 + Math.sin(i * 1.25) * .12, vx: (Math.random() - .5) * .0016, vy: (Math.random() - .5) * .0016, bat: i == 3 ? 9 : 40 + i * 11, out: false }));
+  function size() { const d = devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); R = Math.min(W, H) * .32; }
+  addEventListener('resize', size);
+  const out = (g: any) => Math.hypot(g.x * W - W / 2, g.y * H - H / 2) > R;
+  function show() {
+    info.textContent = !sel ? T.inf : `${sel.n} · ${T.bat} ${sel.bat}%` + (sel.bat < 15 ? ` · ${T.low}` : '') + ` · ${Math.round(Math.hypot(sel.x * W - W / 2, sel.y * H - H / 2) / R * 120)} m ${T.dist}`;
+  }
+  function draw() {
+    tick++; x.clearRect(0, 0, W, H);
+    x.strokeStyle = 'rgba(154,92,255,.1)'; x.lineWidth = 1;
+    for (let i = 0; i < W; i += 40) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, H); x.stroke(); }
+    for (let i = 0; i < H; i += 40) { x.beginPath(); x.moveTo(0, i); x.lineTo(W, i); x.stroke(); }
+    x.setLineDash([10, 8]); x.lineDashOffset = -tick * .4; x.strokeStyle = '#c9b5ff'; x.lineWidth = 2;
+    x.beginPath(); x.arc(W / 2, H / 2, R, 0, 7); x.stroke(); x.setLineDash([]);
+    G.forEach((g) => {
+      if (!still && g !== drag) {
+        g.x += g.vx; g.y += g.vy;
+        if (Math.random() < .01) { g.vx = (Math.random() - .5) * .0016; g.vy = (Math.random() - .5) * .0016; }
+        if (!g.out && out(g)) { g.vx *= -1; g.vy *= -1; g.x += g.vx * 4; g.y += g.vy * 4; }
+        if (g.out) { g.vx = (.5 - g.x) * .0006; g.vy = (.5 - g.y) * .0006; }
+      }
+      const o = out(g);
+      if (o && !g.out) st.textContent = T.out.replace('%n', g.n);
+      if (!o && g.out) st.textContent = T.in;
+      g.out = o;
+      const c = o ? '#ffffff' : g.bat < 15 ? '#ff8a8a' : '#9a5cff', p = g.x * W, q = g.y * H;
+      const pulse = o || g.bat < 15 ? 6 + Math.sin(tick / 8) * 5 : 0;
+      x.fillStyle = c + '44'; x.beginPath(); x.arc(p, q, 15 + pulse, 0, 7); x.fill();
+      x.fillStyle = c; x.beginPath(); x.arc(p, q, 8, 0, 7); x.fill();
+      if (g === sel) { x.strokeStyle = '#fff'; x.lineWidth = 2; x.stroke(); }
+      x.fillStyle = '#f3f0fa'; x.font = '12px DM Sans'; x.fillText(g.n, p + 13, q - 11);
+    });
+    show(); requestAnimationFrame(draw);
+  }
+  const pos = (e: PointerEvent) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.onpointerdown = (e) => {
+    const [mx, my] = pos(e); let best: any = null, bd = 30;
+    G.forEach((g) => { const d = Math.hypot(g.x * W - mx, g.y * H - my); if (d < bd) { bd = d; best = g; } });
+    sel = best; drag = best; if (best) cv.setPointerCapture(e.pointerId);
+  };
+  cv.onpointermove = (e) => { if (drag) { const [mx, my] = pos(e); drag.x = mx / W; drag.y = my / H; } };
+  cv.onpointerup = () => { drag = null; };
+  size(); st.textContent = T.in; draw();
+</script>
+
+<script>
+  const sp = document.getElementById('splash')!;
+  try { if (sessionStorage.getItem('oft-enter')) sp.remove(); } catch {}
+  document.getElementById('enter')?.addEventListener('click', () => {
+    try { sessionStorage.setItem('oft-enter', '1'); } catch {}
+    sp.classList.add('gone'); setTimeout(() => sp.remove(), 600);
+  });
+</script>
