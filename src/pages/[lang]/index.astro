@@ -28,6 +28,7 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 </head>
 <body>
   <div id="splash" role="dialog" aria-label="Welcome">
+    <canvas id="bgc" aria-hidden="true"></canvas>
     <img src={u('/logo.png')} width="400" height="400" class="mark" alt="Open Farm Tools" />
     <p class="quote">“Not your keys, not your cows.”</p>
     <button id="enter" type="button" autofocus>{d.explore}</button>
@@ -145,6 +146,8 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   .pcard h3 { font-size: 24px; margin: 0 0 8px; }
   .cta { margin-top: 36px; }
   #splash small { font-family: 'IBM Plex Mono', monospace; }
+  #bgc { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; cursor: default; }
+  #splash > img, #splash > p, #splash > button { position: relative; z-index: 1; }
   .faq { margin-top: 30px; max-width: 70ch; }
   details { border-bottom: 1px solid var(--line); padding: 16px 0; }
   summary { cursor: pointer; font-weight: 500; }
@@ -235,4 +238,47 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   document.querySelectorAll<HTMLElement>('.pcard').forEach((c) => c.addEventListener('pointermove', (e) => {
     const r = c.getBoundingClientRect(); c.style.setProperty('--x', e.clientX - r.left + 'px'); c.style.setProperty('--y', e.clientY - r.top + 'px');
   }));
+</script>
+
+<script>
+  const bg = document.getElementById('bgc') as HTMLCanvasElement | null;
+  if (bg) {
+    const g = bg.getContext('2d')!;
+    const calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    type P = { x: number; y: number; vx: number; vy: number };
+    let w = 0, h = 0, mx = -1e4, my = -1e4, t = 0, ps: P[] = [];
+    const rings: number[] = [0];
+    function fit() {
+      const d = devicePixelRatio || 1; w = bg!.clientWidth; h = bg!.clientHeight;
+      bg!.width = w * d; bg!.height = h * d; g.setTransform(d, 0, 0, d, 0, 0);
+      ps = Array.from({ length: w < 600 ? 24 : 46 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35 }));
+    }
+    addEventListener('resize', fit); fit();
+    bg.parentElement!.addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; });
+    function frame() {
+      t++; g.clearRect(0, 0, w, h);
+      if (!calm && t % 160 === 0) rings.push(t);
+      for (let i = rings.length - 1; i >= 0; i--) {
+        const a = (t - rings[i]) / 280;
+        if (a > 1) { rings.splice(i, 1); continue; }
+        g.strokeStyle = `rgba(154,92,255,${.38 * (1 - a)})`; g.lineWidth = 2;
+        g.beginPath(); g.arc(w / 2, h * .42, a * Math.max(w, h) * .6, 0, 7); g.stroke();
+      }
+      if (!calm) ps.forEach((p) => {
+        p.x += p.vx; p.y += p.vy;
+        const dx = p.x - mx, dy = p.y - my, d = Math.hypot(dx, dy);
+        if (d < 120 && d > 0) { p.x += dx / d * .8; p.y += dy / d * .8; }
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+      });
+      for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) {
+        const a = ps[i], b = ps[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < 150) { g.strokeStyle = `rgba(154,92,255,${.28 * (1 - d / 150)})`; g.lineWidth = 1; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
+      }
+      g.fillStyle = 'rgba(201,176,255,.85)';
+      ps.forEach((p) => { g.beginPath(); g.arc(p.x, p.y, 2, 0, 7); g.fill(); });
+      if (bg!.isConnected) requestAnimationFrame(frame);
+    }
+    frame();
+  }
 </script>
