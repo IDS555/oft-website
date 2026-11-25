@@ -8,6 +8,11 @@ const d = t[lang as keyof typeof t];
 const app = 'https://openfarmtools.org/';
 const trialUrl = 'https://openfarmtools.org/preview/#trial';
 const tags = ['GPS', 'COLLAR', 'WATER', 'PLAN'];
+const sIcons = [
+  '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5l15 6v11c0 10-6 17-15 21C15 39 9 32 9 22V11z"/><path d="M17 24l5 5 9-10"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6C16 18 12 24 12 30a12 12 0 0 0 24 0c0-6-4-12-12-24Z"/><path d="M19 31a5 5 0 0 0 5 5" opacity=".6"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 42V21a12 12 0 0 1 24 0v21z"/><path d="M7 42h34"/><circle cx="30" cy="31" r="1.8" fill="currentColor"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 43C14 31 12 25 12 20a12 12 0 0 1 24 0c0 5-2 11-12 23z"/><circle cx="24" cy="20" r="4.5"/></svg>'];
 const icons = [
   '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><circle cx="24" cy="24" r="5" fill="currentColor"/><circle cx="24" cy="24" r="13"/><circle cx="24" cy="24" r="21" opacity=".5"/></svg>',
   '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M8 30a16 16 0 0 1 32 0"/><rect x="6" y="30" width="36" height="9" rx="4.5"/><circle cx="24" cy="34.5" r="2.5" fill="currentColor"/></svg>',
@@ -55,7 +60,7 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
     <section id="story" class="story"><h2>{d.story.t}</h2>
       <div class="storygrid">
         <figure><img src={u('/flosse.jpeg')} alt="A sheep with a hen resting on its back" loading="lazy" onerror="this.parentElement.style.display='none'" /></figure>
-        <div>{d.story.i.map((x, i) => <div class="item"><span class="tag">{['WATCHDOG', 'WATER', 'DOOR', 'GPS'][i]}</span><h3>{x[0]}</h3><p>{x[1]}</p></div>)}</div>
+        <div>{d.story.i.map((x, i) => <div class="item"><div class="ico2" set:html={sIcons[i]} /><div><span class="tag">{['WATCHDOG', 'WATER', 'DOOR', 'GPS'][i]}</span><h3>{x[0]}</h3><p>{x[1]}</p></div></div>)}</div>
       </div>
     </section>
     <section id="products"><h2>{d.pt}</h2>
@@ -155,10 +160,15 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   #bgc { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; cursor: default; }
   #splash > img, #splash > p, #splash > button { position: relative; z-index: 1; }
   .storygrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.25fr); gap: 5vw; margin-top: 40px; align-items: start; }
-  .storygrid figure { margin: 0; position: sticky; top: 90px; }
-  .storygrid img { width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 0 60px rgba(154,92,255,.25); }
-  .item { padding: 24px 0; border-bottom: 1px solid var(--line); }
-  .item:first-child { padding-top: 0; }
+  .storygrid figure { margin: 0; position: sticky; top: 90px; isolation: isolate; }
+  .storygrid figure::before { content: ''; position: absolute; inset: -12%; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, rgba(154,92,255,.75), rgba(154,92,255,0) 72%); filter: blur(34px); animation: aura 4.5s ease-in-out infinite; }
+  @keyframes aura { 50% { opacity: .55; transform: scale(1.06); } }
+  @media (prefers-reduced-motion: reduce) { .storygrid figure::before { animation: none; } }
+  .storygrid img { width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid rgba(154,92,255,.7); box-shadow: 0 0 0 6px rgba(154,92,255,.12), 0 0 50px rgba(154,92,255,.5); }
+  .item { display: flex; gap: 22px; align-items: flex-start; padding: 26px; margin-bottom: 14px; border: 1px solid var(--line); border-radius: 22px; background: linear-gradient(160deg, #241a42, #14111f); transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .item:hover { transform: translateX(8px); border-color: var(--vio); box-shadow: 0 10px 36px rgba(154,92,255,.22); }
+  .ico2 { flex: 0 0 60px; width: 60px; height: 60px; border-radius: 18px; display: grid; place-items: center; color: #efe6ff; background: radial-gradient(circle at 30% 25%, rgba(154,92,255,.65), rgba(154,92,255,.12)); box-shadow: 0 0 26px rgba(154,92,255,.5); }
+  .ico2 svg { width: 32px; height: 32px; }
   .item h3 { font-size: 24px; margin: 8px 0; }
   .item p { margin: 0; color: var(--mute); }
   @media (max-width: 820px) { .storygrid { grid-template-columns: 1fr; } .storygrid figure { position: static; } }
