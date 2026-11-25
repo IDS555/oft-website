@@ -22,7 +22,7 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 <body>
   <div id="splash" role="dialog" aria-label="Welcome">
     <img src={u('/logo.png')} width="400" height="400" class="mark" alt="Open Farm Tools" />
-    <p class="quote">“Not your keys, not your coins.”</p>
+    <p class="quote">“Not your keys, not your cows.”</p>
     <button id="enter" type="button" autofocus>{d.explore}</button>
     <small>Powered by Nostr</small>
   </div>
@@ -43,11 +43,12 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
         <div class="hud"><span class="pill" id="info"></span><span class="pill" id="st" aria-live="polite"></span></div>
       </div>
     </header>
+    <section id="peace" class="peace"><h2>{d.peace.t}</h2><p>{d.peace.d}</p></section>
     <section id="products"><h2>{d.pt}</h2>
-      <div class="grid">{d.p.map((x, i) => <article><small>0{i + 1}</small><h3>{x[0]}</h3><p>{x[1]}</p></article>)}</div>
+      <div class="grid">{d.p.map((x, i) => <article><h3>{x[0]}</h3><p>{x[1]}</p></article>)}</div>
     </section>
     <section id="how"><h2>{d.ht}</h2>
-      <div class="grid three">{d.s.map((x, i) => <article><small>{i + 1}</small><h3>{x[0]}</h3><p>{x[1]}</p></article>)}</div>
+      <div class="grid three">{d.s.map((x, i) => <article><h3>{x[0]}</h3><p>{x[1]}</p></article>)}</div>
     </section>
     <section id="faq"><h2>{d.faq.t}</h2>
       <div class="faq">{d.faq.q.map((x) => <details><summary>{x[0]}</summary><p>{x[1]}</p></details>)}<p class="more">{d.faq.more}</p></div>
@@ -103,6 +104,10 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   @keyframes glow { 50% { filter: drop-shadow(0 0 26px rgba(255,255,255,.8)) drop-shadow(0 0 70px rgba(154,92,255,.95)); } }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #splash .mark, #splash .quote, #splash button { animation: none; } }
+  .peace { background: linear-gradient(135deg, #2a1659, #1a1030); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .peace p { font-size: clamp(19px, 2.2vw, 26px); max-width: 52ch; margin: 22px 0 0; color: var(--ink); }
+  .peace h2 { color: #c9b0ff; }
+  article:hover { border-color: var(--vio); box-shadow: 0 0 30px rgba(154,92,255,.22); }
   .faq { margin-top: 30px; max-width: 70ch; }
   details { border-bottom: 1px solid var(--line); padding: 16px 0; }
   summary { cursor: pointer; font-weight: 500; }
