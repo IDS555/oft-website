@@ -88,6 +88,9 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 <style is:global>
   :root { --bg:#0f0d17; --card:#181526; --ink:#f3f0fa; --mute:#a59cc0; --vio:#9a5cff; --line:#2c2644; }
   * { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: clip; }
+  html { -webkit-text-size-adjust: 100%; }
+  a, button, summary { touch-action: manipulation; }
   html { scroll-behavior: smooth; scroll-padding-top: 70px; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 'Archivo', system-ui, sans-serif; }
   h1, h2, h3 { font-family: 'Archivo', system-ui, sans-serif; margin: 0; line-height: 1.08; }
@@ -99,14 +102,14 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   .lang { display: flex; border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
   .lang a { padding: 5px 11px; font-size: 13px; color: var(--mute); text-decoration: none; }
   .lang a[aria-current] { background: var(--vio); color: #fff; }
-  .hero { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 4vw; align-items: center; padding: 7vh 5vw 9vh; min-height: 86vh; }
+  .hero { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 4vw; align-items: center; padding: 7vh 5vw 9vh; min-height: 86vh; min-height: 86svh; }
   .hero h1 { font-size: clamp(40px, 6vw, 84px); font-weight: 800; letter-spacing: -.03em; }
   .hero p { color: var(--mute); max-width: 44ch; margin: 22px 0 30px; }
   .btn { display: inline-block; padding: 13px 24px; margin: 0 10px 10px 0; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 500; }
   .btn.solid { background: var(--vio); border-color: var(--vio); color: #fff; }
   .btn:hover { filter: brightness(1.15); }
   .stage { position: relative; aspect-ratio: 1; max-height: 72vh; width: 100%; border: 1px solid var(--line); border-radius: 20px; background: radial-gradient(circle at 50% 50%, #221a3d, #120f1e 75%); overflow: hidden; }
-  canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; }
   .hint { position: absolute; top: 14px; left: 16px; font-size: 13px; color: var(--mute); }
   .hud { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; }
   .pill { background: rgba(15,13,23,.92); border: 1px solid var(--line); border-radius: 10px; padding: 6px 11px; }
@@ -190,8 +193,9 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   let W = 0, H = 0, tick = 0, sel: any = null, drag: any = null, dragC = -1, fstate = 'fc';
   const F = [[.27, .3], [.74, .26], [.78, .72], [.24, .7]];
   const G: any[] = [1, 2, 3, 4, 5].map((i) => ({ n: 'goat-00' + i, x: .5 + Math.cos(i * 1.25) * .1, y: .5 + Math.sin(i * 1.25) * .1, vx: (Math.random() - .5) * .0016, vy: (Math.random() - .5) * .0016, bat: i == 3 ? 9 : 40 + i * 11, acc: [2, 8, 5, 34, 12][i - 1], out: false, trail: [] }));
-  function size() { const d = devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); }
+  function size() { const d = Math.min(devicePixelRatio || 1, 2); W = cv.clientWidth; H = cv.clientHeight; if (!W || !H) return; cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); }
   addEventListener('resize', size);
+  new ResizeObserver(size).observe(cv.parentElement as HTMLElement);
   function inside(px: number, py: number) {
     let c = false;
     for (let i = 0, j = 3; i < 4; j = i++) {
@@ -241,9 +245,9 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   const pos = (e: PointerEvent) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   cv.onpointerdown = (e) => {
     const [mx, my] = pos(e);
-    dragC = F.findIndex(([a, b]) => Math.hypot(a * W - mx, b * H - my) < 16);
+    dragC = F.findIndex(([a, b]) => Math.hypot(a * W - mx, b * H - my) < 22);
     if (dragC >= 0) { cv.setPointerCapture(e.pointerId); return; }
-    let best: any = null, bd = 30;
+    let best: any = null, bd = 34;
     G.forEach((g) => { const d = Math.hypot(g.x * W - mx, g.y * H - my); if (d < bd) { bd = d; best = g; } });
     sel = best; drag = best; if (best) cv.setPointerCapture(e.pointerId);
   };
@@ -252,6 +256,11 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (dragC >= 0) { F[dragC] = [Math.min(.95, Math.max(.05, mx / W)), Math.min(.95, Math.max(.05, my / H))]; fstate = 'fq'; st.textContent = T.fq; }
     else if (drag) { drag.x = mx / W; drag.y = my / H; }
   };
+  cv.addEventListener('touchstart', (e) => {
+    const t = e.touches[0], r = cv.getBoundingClientRect(), mx = t.clientX - r.left, my = t.clientY - r.top;
+    const hit = F.some(([a, b]) => Math.hypot(a * W - mx, b * H - my) < 22) || G.some((g) => Math.hypot(g.x * W - mx, g.y * H - my) < 34);
+    if (hit) e.preventDefault();
+  }, { passive: false });
   cv.onpointerup = () => {
     if (dragC >= 0) { dragC = -1; setTimeout(() => { fstate = 'fs'; st.textContent = T.fs; }, 900); setTimeout(() => { fstate = 'fc'; st.textContent = T.fc; }, 1800); }
     drag = null;
