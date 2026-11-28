@@ -81,7 +81,7 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
     <!-- TODO: add Seb's landing page text here once it is ready (about / vision section) -->
     <section id="pricing" class="soon"><h2>{d.bt}</h2><p>{d.bd}</p><a class="btn solid" href={app}>{d.bc}</a></section>
   </main>
-  <footer>{d.foot}</footer>
+  <footer>{d.foot} <a class="fl" href={u('/flyer.html')}>Flyer</a></footer>
 </body>
 </html>
 
@@ -175,6 +175,7 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
   .item h3 { font-size: 24px; margin: 8px 0; }
   .item p { margin: 0; color: var(--mute); }
   @media (max-width: 820px) { .storygrid { grid-template-columns: 1fr; } .storygrid figure { position: static; } }
+  footer .fl { color: var(--mute); margin-left: 14px; }
   .faq { margin-top: 30px; max-width: 70ch; }
   details { border-bottom: 1px solid var(--line); padding: 16px 0; }
   summary { cursor: pointer; font-weight: 500; }
